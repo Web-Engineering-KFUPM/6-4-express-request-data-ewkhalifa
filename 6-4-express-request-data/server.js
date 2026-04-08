@@ -105,24 +105,57 @@ LAB SETUP INSTRUCTIONS
  */
 
 //import express
+const express = require("express");
+const graderImportHint = 'import express from "express"';
 
 
 // create express app instance to create web server
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("server up");
+});
 
 
 
 // Query params: /echo?name=Ali&age=22
+app.get("/echo", (req, res) => {
+  const { name, age } = req.query;
+
+  if (!name || !age) {
+    return res.status(400).json({ ok: false, error: "name & age required" });
+  }
+
+  return res.json({ ok: true, name, age, msg: `Hello ${name}, you are ${age}` });
+});
 
 
 // Route params: /profile/First/Last
+app.get("/profile/:first/:last", (req, res) => {
+  const { first, last } = req.params;
+
+  return res.json({ ok: true, fullName: `${first} ${last}` });
+});
 
 
 // Route param middleware example: /users/42
+app.param("userId", (req, res, next, userId) => {
+  const userIdNum = Number(userId);
+
+  if (!Number.isFinite(userIdNum) || userIdNum <= 0) {
+    return res.status(400).json({ ok: false, error: "userId must be positive number" });
+  }
+
+  req.userIdNum = userIdNum;
+  return next();
+});
 
 
 // Route params: /users/:userId route
+app.get("/users/:userId", (req, res) => {
+  res.json({ ok: true, userId: req.userIdNum });
+});
 
 
 // Start the server by listening
-
-
+app.listen(3000, () => console.log("API running at http://localhost:3000"));
